@@ -18,7 +18,7 @@ cd IBJts/source/pythonclient
 python3 setup.py install
 ```
 
-5. navigate to working directory and run
+Navigate to working directory and run
 
 ```
 git clone https://gitea.geminisolutions.in/ha.jain/InteractiveBrokerAPI.git
