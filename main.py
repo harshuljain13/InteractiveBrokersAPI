@@ -78,15 +78,23 @@ class GeminiApp(GeminiWrapper, GeminiClient):
         self.start()
 
     def start(self):
-        self.tickDataOperations_req()
+        if self.started:
+            return
+
+        self.started = True
+
+        if self.globalCancelOnly:
+            print("Executing GlobalCancel only")
+            self.reqGlobalCancel()
+        else:
+            self.tickDataOperations_req()
 
     @printWhenExecuting
     def tickDataOperations_req(self):
-        self.reqMarketDataType(1)
+        self.reqMarketDataType(3)
         self.reqMktData(1000, ContractSamples.OptionAtBOX(), "", False, False, [])
 
     @iswrapper
-    # ! [tickprice]
     def tickPrice(self, reqId: TickerId, tickType: TickType, price: float,
                   attrib: TickAttrib):
         super().tickPrice(reqId, tickType, price, attrib)
@@ -102,6 +110,14 @@ class GeminiApp(GeminiWrapper, GeminiClient):
     def tickDataOperations_cancel(self):
         self.cancelMktData(1000)
     
+    def keyboardInterrupt(self):
+        self.nKeybInt += 1
+        if self.nKeybInt == 1:
+            self.stop()
+        else:
+            print("Finishing test")
+            self.done = True
+
     def stop(self):
         self.tickDataOperations_cancel()
 
@@ -110,13 +126,6 @@ def main():
     app.connect("127.0.0.1", 7497, clientId=0)
     print("serverVersion:%s connectionTime:%s" % (app.serverVersion(), app.twsConnectionTime()))
     app.run()
-
-def printWhenExecuting(fn):
-    def fn2(*args):
-        print("   doing", fn.__name__)
-        fn(*args)
-        print("   done w/", fn.__name__)
-    return fn2
 
 if __name__ == '__main__':
     main()
